@@ -57,8 +57,11 @@ if ($clamp) {
 if ($params->get('alternate', 1)) {
     $classes[] = 'mtl--alternate';
 }
-if ($params->get('animate', 1)) {
+// Animation style (modules saved before 1.3 only have the yes/no "animate" switch).
+$animation = $params->get('animation', $params->get('animate', 1) ? 'scale' : 'none');
+if (in_array($animation, ['scale', 'fade'], true)) {
     $classes[] = 'mtl--animate';
+    $classes[] = 'mtl--anim-' . $animation;
 }
 if ($horizontal && $params->get('nav_always', 1)) {
     $classes[] = 'mtl--nav-always';

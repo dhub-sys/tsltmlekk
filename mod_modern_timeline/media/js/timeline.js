@@ -46,7 +46,7 @@
         var items = this.items;
 
         if (!this.root.classList.contains('mtl--animate') || reduceMotion || !('IntersectionObserver' in window)) {
-            items.forEach(function (el) { el.classList.add('is-visible'); });
+            items.forEach(function (el) { el.classList.add('is-visible', 'is-revealed'); });
             return;
         }
 
@@ -58,9 +58,11 @@
                     return;
                 }
                 var el = entry.target;
-                el.style.setProperty('--mtl-delay', Math.min(batch, 6) * 90 + 'ms');
+                var delay = Math.min(batch, 6) * 110;
+                el.style.setProperty('--mtl-delay', delay + 'ms');
                 batch++;
                 el.classList.add('is-visible');
+                setTimeout(function () { el.classList.add('is-revealed'); }, delay + 2000);
                 io.unobserve(el);
             });
             clearTimeout(timer);
@@ -71,7 +73,24 @@
             threshold: 0.12
         });
 
-        items.forEach(function (el) { io.observe(el); });
+        var observeItems = function () {
+            items.forEach(function (el) { io.observe(el); });
+        };
+
+        if (this.horizontal) {
+            // The item observer watches the horizontal scroller, which "sees" its items even
+            // while the whole timeline is still below the fold. Wait until the timeline
+            // itself enters the window, so visitors actually see the entrance.
+            var gate = new IntersectionObserver(function (entries) {
+                if (entries.some(function (en) { return en.isIntersecting; })) {
+                    gate.disconnect();
+                    observeItems();
+                }
+            }, { threshold: 0.2 });
+            gate.observe(this.root);
+        } else {
+            observeItems();
+        }
 
         // Safety net: never leave items invisible (e.g. hidden tabs, print).
         setTimeout(function () {

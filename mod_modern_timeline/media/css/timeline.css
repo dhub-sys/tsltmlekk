@@ -59,10 +59,9 @@
 .mtl--date-pill .mtl__date-label {
     padding: .42em .95em;
     border-radius: 999px;
-    font-size: .78rem;
+    font-size: .8rem;
     font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
+    letter-spacing: .01em;
     color: var(--mtl-accent);
     background: color-mix(in srgb, var(--mtl-accent) 13%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mtl-accent) 22%, transparent);
@@ -229,15 +228,16 @@
     line-height: 1.3;
     font-weight: 700;
     color: inherit;
-    text-transform: none;
+    text-transform: none !important; /* some YOOtheme styles set uppercase headings */
     letter-spacing: normal;
 }
+.mtl__subtitle,
+.mtl__date-label { text-transform: none; }
 .mtl__subtitle {
     margin: 0 0 .75em;
-    font-size: .8rem;
+    font-size: .88rem;
     font-weight: 600;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--mtl-accent);
 }
 .mtl__text {
@@ -761,19 +761,95 @@ html.mtl-modal-open { overflow: hidden; }
 /* =====================================================================
    REVEAL ANIMATION (only when JS is active)
    ===================================================================== */
-.mtl--js.mtl--animate .mtl__item {
+/* --- "Fade up": the whole item slides in --- */
+.mtl--js.mtl--anim-fade .mtl__item {
     opacity: 0;
     transform: translateY(22px);
     transition: opacity .7s var(--mtl-ease), transform .7s var(--mtl-ease);
     transition-delay: var(--mtl-delay, 0ms);
 }
-.mtl--js.mtl--animate.mtl--horizontal .mtl__item { transform: translateX(26px); }
-.mtl--js.mtl--animate .mtl__item.is-visible { opacity: 1; transform: none; }
+.mtl--js.mtl--anim-fade.mtl--horizontal .mtl__item { transform: translateX(26px); }
+.mtl--js.mtl--anim-fade .mtl__item.is-visible { opacity: 1; transform: none; }
+
+/* --- "Fade & scale": each part of the item comes alive in sequence ---
+   marker pops → line draws → date → card scales up (image settles) → title → subtitle → text → buttons.
+   The staged delays apply only while revealing (.is-visible without .is-revealed),
+   so hover effects stay instant afterwards. */
+.mtl--anim-scale {
+    --mtl-pop: cubic-bezier(.34, 1.56, .64, 1);
+    --mtl-soft: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* hidden state */
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) .mtl__dot { transform: scale(0); }
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) .mtl__marker::before,
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) .mtl__marker::after { opacity: 0; }
+.mtl--js.mtl--anim-scale.mtl--horizontal .mtl__item:not(.is-visible) .mtl__marker::before { transform: scaleX(0); }
+.mtl--js.mtl--anim-scale.mtl--vertical .mtl__item:not(.is-visible) .mtl__marker::before { transform: scaleY(0); }
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) .mtl__date-label { opacity: 0; transform: translateY(10px) scale(.85); }
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) .mtl__card { opacity: 0; transform: translateY(18px) scale(.88); }
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) .mtl__media img { transform: scale(1.22); }
+.mtl--js.mtl--anim-scale .mtl__item:not(.is-visible) :is(.mtl__title, .mtl__subtitle, .mtl__text, .mtl__expand, .mtl__link) {
+    opacity: 0;
+    transform: translateY(14px);
+}
+
+/* growth origins */
+.mtl--anim-scale .mtl__card { transform-origin: 50% 0; }
+.mtl--anim-scale .mtl__date-label { transform-origin: 0 100%; }
+.mtl--anim-scale.mtl--horizontal .mtl__marker::before { transform-origin: 0 50%; }
+[dir="rtl"] .mtl--anim-scale.mtl--horizontal .mtl__marker::before { transform-origin: 100% 50%; }
+.mtl--anim-scale.mtl--vertical .mtl__marker::before { transform-origin: 50% 0; }
+@media (min-width: 640px) {
+    .mtl--anim-scale.mtl--horizontal.mtl--alternate:not(.mtl--alt-off) .mtl__item:nth-child(even) .mtl__card { transform-origin: 50% 100%; }
+}
+
+/* revealing: staged transitions */
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__dot {
+    transition: transform .75s var(--mtl-pop) var(--mtl-delay, 0ms);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__marker::before {
+    transition: transform 1.1s var(--mtl-soft) calc(var(--mtl-delay, 0ms) + 60ms), opacity .4s ease calc(var(--mtl-delay, 0ms) + 60ms);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__marker::after {
+    transition: opacity .5s ease calc(var(--mtl-delay, 0ms) + 200ms);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__date-label {
+    transition: opacity .55s ease calc(var(--mtl-delay, 0ms) + 90ms), transform .8s var(--mtl-pop) calc(var(--mtl-delay, 0ms) + 90ms);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__card {
+    transition: opacity .6s ease calc(var(--mtl-delay, 0ms) + 140ms), transform .95s var(--mtl-soft) calc(var(--mtl-delay, 0ms) + 140ms);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__media img {
+    transition: transform 1.6s var(--mtl-soft) calc(var(--mtl-delay, 0ms) + 140ms);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) :is(.mtl__title, .mtl__subtitle, .mtl__text, .mtl__expand, .mtl__link) {
+    transition: opacity .6s ease, transform .8s var(--mtl-soft);
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__title    { transition-delay: calc(var(--mtl-delay, 0ms) + 300ms); }
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__subtitle { transition-delay: calc(var(--mtl-delay, 0ms) + 370ms); }
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__text     { transition-delay: calc(var(--mtl-delay, 0ms) + 440ms); }
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) :is(.mtl__expand, .mtl__link) { transition-delay: calc(var(--mtl-delay, 0ms) + 520ms); }
+
+/* title gets a soft accent underline sweep once it lands */
+.mtl--anim-scale .mtl__title {
+    background: linear-gradient(90deg, var(--mtl-accent), var(--mtl-accent-2)) no-repeat 0 100% / 0 2px;
+    padding-bottom: 2px;
+}
+.mtl--anim-scale .mtl__item.is-visible:not(.is-revealed) .mtl__title {
+    animation: mtl-underline 1.4s var(--mtl-soft) calc(var(--mtl-delay, 0ms) + 450ms) both;
+}
+@keyframes mtl-underline {
+    0%   { background-size: 0 2px; }
+    55%  { background-size: 100% 2px; background-position: 0 100%; }
+    100% { background-size: 0 2px; background-position: 100% 100%; }
+}
 
 @media (prefers-reduced-motion: reduce) {
     .mtl *,
     .mtl *::before,
     .mtl *::after { animation: none !important; transition: none !important; }
     .mtl--horizontal .mtl__viewport { scroll-behavior: auto; }
-    .mtl--js.mtl--animate .mtl__item { opacity: 1; transform: none; }
+    .mtl--js.mtl--animate .mtl__item,
+    .mtl--js.mtl--animate .mtl__item * { opacity: 1 !important; transform: none !important; }
 }
