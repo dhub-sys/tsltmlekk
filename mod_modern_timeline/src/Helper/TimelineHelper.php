@@ -100,6 +100,14 @@ class TimelineHelper
         }
 
         $vars[] = '--mtl-card-w:' . max(180, min(800, (int) $params->get('card_width', 320))) . 'px';
+        $vars[] = '--mtl-n-d:' . max(1, min(8, (int) $params->get('items_desktop', 3)));
+        $vars[] = '--mtl-n-t:' . max(1, min(6, (int) $params->get('items_tablet', 2)));
+        $vars[] = '--mtl-n-m:' . max(1, min(3, (int) $params->get('items_mobile', 1)));
+        $vars[] = '--mtl-max-w:' . max(200, min(1200, (int) $params->get('auto_max_width', 520))) . 'px';
+
+        if (($lines = (int) $params->get('text_lines', 0)) > 0) {
+            $vars[] = '--mtl-lines:' . min(40, $lines);
+        }
         $vars[] = '--mtl-gap:' . max(0, min(120, (int) $params->get('gap', 28))) . 'px';
         $vars[] = '--mtl-radius:' . max(0, min(48, (int) $params->get('radius', 18))) . 'px';
 

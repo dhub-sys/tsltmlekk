@@ -33,6 +33,8 @@ $marker     = $params->get('marker_style', 'icon');
 $headingTag = in_array($params->get('heading_tag', 'h3'), ['h2', 'h3', 'h4', 'h5', 'h6', 'div'], true)
     ? $params->get('heading_tag', 'h3') : 'h3';
 $navPos     = $params->get('nav_position', 'bottom') === 'sides' ? 'sides' : 'bottom';
+$widthMode  = in_array($params->get('width_mode', 'auto'), ['auto', 'perview', 'fixed'], true) ? $params->get('width_mode', 'auto') : 'auto';
+$clamp      = (int) $params->get('text_lines', 0) > 0;
 $id         = 'mtl-' . (int) $module->id;
 $total      = count($items);
 
@@ -46,11 +48,20 @@ $classes = [
     'mtl--nav-' . $navPos,
 ];
 
+if ($horizontal) {
+    $classes[] = 'mtl--w-' . $widthMode;
+}
+if ($clamp) {
+    $classes[] = 'mtl--clamp';
+}
 if ($params->get('alternate', 1)) {
     $classes[] = 'mtl--alternate';
 }
 if ($params->get('animate', 1)) {
     $classes[] = 'mtl--animate';
+}
+if ($horizontal && $params->get('nav_always', 1)) {
+    $classes[] = 'mtl--nav-always';
 }
 if ($horizontal && $params->get('edge_fade', 1)) {
     $classes[] = 'mtl--fade';
@@ -67,6 +78,20 @@ $dataAttrs = [
     'data-drag'         => (int) $params->get('drag', 1),
     'data-initial'      => $horizontal ? 0 : max(0, (int) $params->get('initial_items', 0)),
 ];
+
+if ($clamp) {
+    $dataAttrs['data-more']    = $params->get('more_mode', 'modal') === 'expand' ? 'expand' : 'modal';
+    $dataAttrs['data-l-close'] = Text::_('MOD_MODERN_TIMELINE_CLOSE');
+    $dataAttrs['data-l-prev']  = Text::_('MOD_MODERN_TIMELINE_PREV');
+    $dataAttrs['data-l-next']  = Text::_('MOD_MODERN_TIMELINE_NEXT');
+}
+
+if ($horizontal && $widthMode === 'auto') {
+    $dataAttrs['data-fit']   = 'auto';
+    $dataAttrs['data-min-w'] = max(160, (int) $params->get('auto_min_width', 260));
+    $dataAttrs['data-max-w'] = max(200, (int) $params->get('auto_max_width', 520));
+    $dataAttrs['data-max-h'] = max(0, (int) $params->get('auto_max_height', 0));
+}
 
 $attr = '';
 foreach ($dataAttrs as $k => $v) {
@@ -121,7 +146,10 @@ $chevron = static fn (string $dir) => '<svg viewBox="0 0 24 24" width="20" heigh
                             <?php endif; ?>
 
                             <?php if (trim(strip_tags($item->content, '<img><iframe><video>')) !== '') : ?>
-                                <div class="mtl__text"><?php echo $item->content; ?></div>
+                                <div class="mtl__text"<?php echo $clamp ? ' id="' . $id . '-t' . $i . '"' : ''; ?>><?php echo $item->content; ?></div>
+                                <?php if ($clamp) : ?>
+                                    <button type="button" class="mtl__expand" data-mtl-expand aria-expanded="false" aria-controls="<?php echo $id . '-t' . $i; ?>" data-less="<?php echo $e(Text::_('MOD_MODERN_TIMELINE_SHOW_LESS')); ?>" hidden><span><?php echo $e(Text::_('MOD_MODERN_TIMELINE_SHOW_MORE_TEXT')); ?></span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+                                <?php endif; ?>
                             <?php endif; ?>
 
                             <?php if ($item->link !== '') : ?>

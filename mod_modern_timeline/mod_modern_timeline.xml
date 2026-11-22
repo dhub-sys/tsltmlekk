@@ -5,7 +5,7 @@
     <creationDate>2026-11</creationDate>
     <copyright>(C) 2026</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <description>MOD_MODERN_TIMELINE_XML_DESCRIPTION</description>
     <namespace path="src">ModernTimeline\Module\ModernTimeline</namespace>
 
@@ -195,6 +195,87 @@
                     <option value="1">JYES</option>
                 </field>
                 <field
+                    name="width_mode"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_WIDTH_MODE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_WIDTH_MODE_DESC"
+                    default="auto"
+                    showon="layout_mode:horizontal"
+                >
+                    <option value="auto">MOD_MODERN_TIMELINE_WIDTH_AUTO</option>
+                    <option value="perview">MOD_MODERN_TIMELINE_WIDTH_PERVIEW</option>
+                    <option value="fixed">MOD_MODERN_TIMELINE_WIDTH_FIXED</option>
+                </field>
+                <field
+                    name="auto_min_width"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_AUTO_MIN_W_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_AUTO_MIN_W_DESC"
+                    default="260"
+                    min="160"
+                    max="800"
+                    step="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode:auto"
+                />
+                <field
+                    name="auto_max_width"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_AUTO_MAX_W_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_AUTO_MAX_W_DESC"
+                    default="520"
+                    min="200"
+                    max="1200"
+                    step="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode:auto"
+                />
+                <field
+                    name="auto_max_height"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_AUTO_MAX_H_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_AUTO_MAX_H_DESC"
+                    default="0"
+                    min="0"
+                    max="3000"
+                    step="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode:auto"
+                />
+                <field
+                    name="items_desktop"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_DESKTOP_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_DESKTOP_DESC"
+                    default="3"
+                    min="1"
+                    max="8"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode:perview"
+                />
+                <field
+                    name="items_tablet"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_TABLET_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_TABLET_DESC"
+                    default="2"
+                    min="1"
+                    max="6"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode:perview"
+                />
+                <field
+                    name="items_mobile"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_MOBILE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_MOBILE_DESC"
+                    default="1"
+                    min="1"
+                    max="3"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode:perview"
+                />
+                <field
                     name="card_width"
                     type="number"
                     label="MOD_MODERN_TIMELINE_FIELD_CARD_WIDTH_LABEL"
@@ -204,8 +285,28 @@
                     max="800"
                     step="10"
                     filter="integer"
-                    showon="layout_mode:horizontal"
+                    showon="layout_mode:horizontal[AND]width_mode:fixed"
                 />
+                <field
+                    name="text_lines"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_TEXT_LINES_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_TEXT_LINES_DESC"
+                    default="4"
+                    min="0"
+                    max="40"
+                    filter="integer"
+                />
+                <field
+                    name="more_mode"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_MORE_MODE_LABEL"
+                    default="modal"
+                    showon="text_lines!:0"
+                >
+                    <option value="modal">MOD_MODERN_TIMELINE_MORE_MODAL</option>
+                    <option value="expand">MOD_MODERN_TIMELINE_MORE_EXPAND</option>
+                </field>
                 <field
                     name="gap"
                     type="number"
@@ -268,6 +369,17 @@
                 >
                     <option value="bottom">MOD_MODERN_TIMELINE_NAV_BOTTOM</option>
                     <option value="sides">MOD_MODERN_TIMELINE_NAV_SIDES</option>
+                </field>
+                <field
+                    name="nav_always"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_NAV_ALWAYS_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_NAV_ALWAYS_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
                 </field>
                 <field
                     name="scroll_step"
