@@ -421,7 +421,8 @@
             return;
         }
 
-        var minW = parseInt(root.getAttribute('data-min-w'), 10) || 260;
+        // Only a safety floor: the number per YOOtheme breakpoint is what the user asked for.
+        var minW = 160;
         var maxW = parseInt(root.getAttribute('data-max-w'), 10) || 520;
         var maxH = parseInt(root.getAttribute('data-max-h'), 10) || Math.max(380, window.innerHeight * 0.8);
         var count = this.items.length;
@@ -444,19 +445,30 @@
         root.classList.add('mtl--fitted');
 
         // From the most items per screen down: keep the first that fits the height.
-        // Stop once cards reach the maximum width (fewer items would not get any shorter).
-        var chosen = 1;
+        // If none fits, use the count that gives the lowest timeline (wider cards are not
+        // always shorter: images grow with the width), preferring more items on near ties.
+        var chosen = 0;
+        var bestH = Infinity;
+        var bestN = 1;
         for (var n = Math.max(1, count); n >= 1; n--) {
-            var w = cardWidth(n);
-            if (w < minW && n > 1) {
+            if (cardWidth(n) < minW && n > 1) {
                 continue;
             }
-            chosen = n;
             root.style.setProperty('--mtl-fit-n', n);
-            if (track.offsetHeight <= maxH || w >= maxW) {
+            var h = track.offsetHeight;
+            if (h <= maxH) {
+                chosen = n;
                 break;
             }
+            if (h < bestH * 0.95) {
+                bestH = h;
+                bestN = n;
+            }
+            if (cardWidth(n) >= maxW) {
+                break; // cards are already at their maximum width
+            }
         }
+        chosen = chosen || bestN;
 
         root.style.setProperty('--mtl-fit-n', chosen);
     };
@@ -553,57 +565,113 @@
     Timeline.prototype.initMore = function () {
         var self = this;
         var root = this.root;
-        this.moreMode = root.getAttribute('data-more') || 'modal';
+        this.moreMode = root.getAttribute('data-more') || '';
+        this.cardTrigger = root.getAttribute('data-more-trigger') === 'card';
+        this.clampable = root.classList.contains('mtl--clamp');
         this.expandBtns = Array.prototype.slice.call(root.querySelectorAll('[data-mtl-expand]'));
 
-        if (!this.expandBtns.length) {
+        if (!this.moreMode) {
             return;
         }
-
         if (this.moreMode === 'modal' && typeof HTMLDialogElement === 'undefined') {
             this.moreMode = 'expand';
         }
 
         this.expandBtns.forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var item = btn.closest('.mtl__item');
-                if (self.moreMode === 'modal') {
-                    self.openModal(self.items.indexOf(item));
+                self.handleMore(btn.closest('.mtl__item'));
+            });
+        });
+
+        if (!this.cardTrigger) {
+            return;
+        }
+
+        // The whole card opens "more" (no button). Real links inside the card keep working.
+        this.items.forEach(function (item) {
+            var card = item.querySelector('.mtl__card');
+            var title = item.querySelector('.mtl__title');
+            card.classList.add('mtl__card--link');
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('role', 'button');
+            if (self.moreMode === 'modal') {
+                card.setAttribute('aria-haspopup', 'dialog');
+            }
+            if (title) {
+                card.setAttribute('aria-label', (root.getAttribute('data-l-more') || '') + ': ' + title.textContent.trim());
+            }
+            card.addEventListener('click', function (e) {
+                if (e.target.closest('a, button, input, select, textarea, video, iframe')) {
                     return;
                 }
-                var text = item.querySelector('.mtl__text');
-                var label = btn.querySelector('span');
-                var expanded = !text.classList.contains('is-expanded');
-                if (!btn.hasAttribute('data-more-label')) {
-                    btn.setAttribute('data-more-label', label.textContent);
+                var sel = window.getSelection && window.getSelection();
+                if (sel && String(sel).length > 2 && card.contains(sel.anchorNode)) {
+                    return; // the visitor is selecting text
                 }
-                text.classList.toggle('is-expanded', expanded);
-                text.classList.toggle('is-clamped', !expanded);
-                btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-                btn.classList.toggle('is-open', expanded);
-                label.textContent = expanded ? btn.getAttribute('data-less') : btn.getAttribute('data-more-label');
-                if (self.horizontal) {
-                    self.update();
+                self.handleMore(item);
+            });
+            card.addEventListener('keydown', function (e) {
+                if (e.target === card && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    self.handleMore(item);
                 }
             });
         });
     };
 
+    Timeline.prototype.handleMore = function (item) {
+        if (this.moreMode === 'modal') {
+            this.openModal(this.items.indexOf(item));
+            return;
+        }
+        var text = item.querySelector('.mtl__text');
+        if (!text || (!text.classList.contains('is-clamped') && !text.classList.contains('is-expanded'))) {
+            return; // nothing is hidden
+        }
+        var expanded = !text.classList.contains('is-expanded');
+        text.classList.toggle('is-expanded', expanded);
+        text.classList.toggle('is-clamped', !expanded);
+        item.classList.toggle('is-expanded', expanded);
+
+        var btn = item.querySelector('[data-mtl-expand]');
+        if (btn) {
+            var label = btn.querySelector('span');
+            if (!btn.hasAttribute('data-more-label')) {
+                btn.setAttribute('data-more-label', label.textContent);
+            }
+            btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            btn.classList.toggle('is-open', expanded);
+            label.textContent = expanded ? btn.getAttribute('data-less') : btn.getAttribute('data-more-label');
+        } else {
+            item.querySelector('.mtl__card').setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+        if (this.horizontal) {
+            this.update();
+        }
+    };
+
     Timeline.prototype.checkClamp = function () {
-        (this.expandBtns || []).forEach(function (btn) {
-            var text = btn.closest('.mtl__item').querySelector('.mtl__text');
+        if (!this.clampable) {
+            return;
+        }
+        this.items.forEach(function (item) {
+            var text = item.querySelector('.mtl__text');
             if (!text || text.classList.contains('is-expanded')) {
                 return;
             }
             var cut = text.scrollHeight > text.clientHeight + 2;
             text.classList.toggle('is-clamped', cut);
-            btn.hidden = !cut;
+            item.classList.toggle('is-truncated', cut);
+            var btn = item.querySelector('[data-mtl-expand]');
+            if (btn) {
+                btn.hidden = !cut;
+            }
         });
     };
 
     Timeline.prototype.observeClamp = function () {
         var self = this;
-        if (!this.expandBtns || !this.expandBtns.length) {
+        if (!this.clampable) {
             return;
         }
         var w = 0;
@@ -715,20 +783,20 @@
             body.insertBefore(dateWrap, body.firstChild);
         }
 
-        var title = body.querySelector('.mtl__title');
-        if (title) {
-            title.id = this.modal.id + '-title';
-            this.modal.setAttribute('aria-labelledby', title.id);
-        } else {
-            this.modal.removeAttribute('aria-labelledby');
-        }
-
         if (media) {
             var m = media.cloneNode(true);
             m.querySelectorAll('img').forEach(function (img) { img.loading = 'eager'; });
             box.appendChild(m);
         }
         box.appendChild(body);
+
+        var title = box.querySelector('.mtl__title');
+        if (title) {
+            title.id = this.modal.id + '-title';
+            this.modal.setAttribute('aria-labelledby', title.id);
+        } else {
+            this.modal.removeAttribute('aria-labelledby');
+        }
 
         this.modalContent.innerHTML = '';
         this.modalContent.appendChild(box);
@@ -762,9 +830,9 @@
         } else if (item.classList.contains('mtl__item--collapsed')) {
             return;
         }
-        var btn = item.querySelector('[data-mtl-expand]:not([hidden])');
-        if (btn) {
-            btn.focus({ preventScroll: !this.horizontal ? false : true });
+        var target = this.cardTrigger ? item.querySelector('.mtl__card') : item.querySelector('[data-mtl-expand]:not([hidden])');
+        if (target) {
+            target.focus({ preventScroll: !!this.horizontal });
         }
     };
 

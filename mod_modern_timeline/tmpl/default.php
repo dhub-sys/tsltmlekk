@@ -35,6 +35,9 @@ $headingTag = in_array($params->get('heading_tag', 'h3'), ['h2', 'h3', 'h4', 'h5
 $navPos     = $params->get('nav_position', 'bottom') === 'sides' ? 'sides' : 'bottom';
 $widthMode  = in_array($params->get('width_mode', 'auto'), ['auto', 'perview', 'fixed'], true) ? $params->get('width_mode', 'auto') : 'auto';
 $clamp      = (int) $params->get('text_lines', 0) > 0;
+$moreMode   = $params->get('more_mode', 'modal') === 'expand' ? 'expand' : 'modal';
+$cardMore   = $params->get('more_trigger', 'button') === 'card' && ($clamp || $moreMode === 'modal');
+$titleOnImg = (bool) $params->get('title_on_image', 1);
 $id         = 'mtl-' . (int) $module->id;
 $total      = count($items);
 
@@ -93,8 +96,10 @@ $dataAttrs = [
     'data-active'       => $activeMode,
 ];
 
-if ($clamp) {
-    $dataAttrs['data-more']    = $params->get('more_mode', 'modal') === 'expand' ? 'expand' : 'modal';
+if ($clamp || $cardMore) {
+    $dataAttrs['data-more']         = $moreMode;
+    $dataAttrs['data-more-trigger'] = $cardMore ? 'card' : 'button';
+    $dataAttrs['data-l-more']       = Text::_('MOD_MODERN_TIMELINE_SHOW_MORE_TEXT');
     $dataAttrs['data-l-close'] = Text::_('MOD_MODERN_TIMELINE_CLOSE');
     $dataAttrs['data-l-prev']  = Text::_('MOD_MODERN_TIMELINE_PREV');
     $dataAttrs['data-l-next']  = Text::_('MOD_MODERN_TIMELINE_NEXT');
@@ -102,7 +107,6 @@ if ($clamp) {
 
 if ($horizontal && $widthMode === 'auto') {
     $dataAttrs['data-fit']   = 'auto';
-    $dataAttrs['data-min-w'] = max(160, (int) $params->get('auto_min_width', 260));
     $dataAttrs['data-max-w'] = max(200, (int) $params->get('auto_max_width', 520));
     $dataAttrs['data-max-h'] = max(0, (int) $params->get('auto_max_height', 0));
 }
@@ -120,7 +124,8 @@ $chevron = static fn (string $dir) => '<svg viewBox="0 0 24 24" width="20" heigh
     <div class="mtl__viewport"<?php if ($horizontal) : ?> tabindex="0" role="region" aria-label="<?php echo $e($module->title ?: Text::_('MOD_MODERN_TIMELINE_ARIA_TIMELINE')); ?>"<?php endif; ?>>
         <ol class="mtl__track">
             <?php foreach ($items as $i => $item) :
-                $liClass = 'mtl__item' . ($item->highlight && $activeMode === 'manual' ? ' mtl__item--highlight' : '') . ($item->image ? ' mtl__item--has-image' : '');
+                $onImage = $titleOnImg && $item->image && $item->title !== '';
+                $liClass = 'mtl__item' . ($onImage ? ' mtl__item--title-on-image' : '') . ($item->highlight && $activeMode === 'manual' ? ' mtl__item--highlight' : '') . ($item->image ? ' mtl__item--has-image' : '');
                 $liStyle = $item->color !== '' ? ' style="--mtl-accent:' . $e($item->color) . ';--mtl-accent-2:' . $e($item->color) . '"' : '';
                 ?>
                 <li class="<?php echo $liClass; ?>"<?php echo $liStyle; ?><?php echo $item->highlight ? ' data-mtl-highlight' : ''; ?>>
@@ -147,21 +152,29 @@ $chevron = static fn (string $dir) => '<svg viewBox="0 0 24 24" width="20" heigh
                                      alt="<?php echo $e($item->image->alt); ?>"
                                      loading="lazy" decoding="async"
                                      <?php if ($item->image->width && $item->image->height) : ?>width="<?php echo $item->image->width; ?>" height="<?php echo $item->image->height; ?>"<?php endif; ?>>
+                                <?php if ($onImage) : ?>
+                                    <figcaption class="mtl__media-caption">
+                                        <<?php echo $headingTag; ?> class="mtl__title"><?php echo $e($item->title); ?></<?php echo $headingTag; ?>>
+                                        <?php if ($item->subtitle !== '') : ?>
+                                            <p class="mtl__subtitle"><?php echo $e($item->subtitle); ?></p>
+                                        <?php endif; ?>
+                                    </figcaption>
+                                <?php endif; ?>
                             </figure>
                         <?php endif; ?>
 
                         <div class="mtl__body">
-                            <?php if ($item->title !== '') : ?>
+                            <?php if ($item->title !== '' && !$onImage) : ?>
                                 <<?php echo $headingTag; ?> class="mtl__title"><?php echo $e($item->title); ?></<?php echo $headingTag; ?>>
                             <?php endif; ?>
 
-                            <?php if ($item->subtitle !== '') : ?>
+                            <?php if ($item->subtitle !== '' && !$onImage) : ?>
                                 <p class="mtl__subtitle"><?php echo $e($item->subtitle); ?></p>
                             <?php endif; ?>
 
                             <?php if (trim(strip_tags($item->content, '<img><iframe><video>')) !== '') : ?>
                                 <div class="mtl__text"<?php echo $clamp ? ' id="' . $id . '-t' . $i . '"' : ''; ?>><?php echo $item->content; ?></div>
-                                <?php if ($clamp) : ?>
+                                <?php if ($clamp && !$cardMore) : ?>
                                     <button type="button" class="mtl__expand" data-mtl-expand aria-expanded="false" aria-controls="<?php echo $id . '-t' . $i; ?>" data-less="<?php echo $e(Text::_('MOD_MODERN_TIMELINE_SHOW_LESS')); ?>" hidden><span><?php echo $e(Text::_('MOD_MODERN_TIMELINE_SHOW_MORE_TEXT')); ?></span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
                                 <?php endif; ?>
                             <?php endif; ?>

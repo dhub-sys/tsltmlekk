@@ -5,7 +5,7 @@
     <creationDate>2026-11</creationDate>
     <copyright>(C) 2026</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
     <description>MOD_MODERN_TIMELINE_XML_DESCRIPTION</description>
     <namespace path="src">ModernTimeline\Module\ModernTimeline</namespace>
 
@@ -231,18 +231,6 @@
                     <option value="fixed">MOD_MODERN_TIMELINE_WIDTH_FIXED</option>
                 </field>
                 <field
-                    name="auto_min_width"
-                    type="number"
-                    label="MOD_MODERN_TIMELINE_FIELD_AUTO_MIN_W_LABEL"
-                    description="MOD_MODERN_TIMELINE_FIELD_AUTO_MIN_W_DESC"
-                    default="260"
-                    min="160"
-                    max="800"
-                    step="10"
-                    filter="integer"
-                    showon="layout_mode:horizontal[AND]width_mode:auto"
-                />
-                <field
                     name="auto_max_width"
                     type="number"
                     label="MOD_MODERN_TIMELINE_FIELD_AUTO_MAX_W_LABEL"
@@ -347,11 +335,20 @@
                     filter="integer"
                 />
                 <field
+                    name="more_trigger"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_MORE_TRIGGER_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_MORE_TRIGGER_DESC"
+                    default="button"
+                >
+                    <option value="button">MOD_MODERN_TIMELINE_MORE_TRIGGER_BUTTON</option>
+                    <option value="card">MOD_MODERN_TIMELINE_MORE_TRIGGER_CARD</option>
+                </field>
+                <field
                     name="more_mode"
                     type="list"
                     label="MOD_MODERN_TIMELINE_FIELD_MORE_MODE_LABEL"
                     default="modal"
-                    showon="text_lines!:0"
                 >
                     <option value="modal">MOD_MODERN_TIMELINE_MORE_MODAL</option>
                     <option value="expand">MOD_MODERN_TIMELINE_MORE_EXPAND</option>
@@ -586,6 +583,17 @@
                     max="48"
                     filter="integer"
                 />
+                <field
+                    name="title_on_image"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_TITLE_ON_IMAGE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_TITLE_ON_IMAGE_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
                 <field
                     name="image_ratio"
                     type="list"

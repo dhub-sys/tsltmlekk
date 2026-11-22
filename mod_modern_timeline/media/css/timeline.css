@@ -931,3 +931,60 @@ html.mtl-modal-open { overflow: hidden; }
     .mtl--js.mtl--animate .mtl__item,
     .mtl--js.mtl--animate .mtl__item * { opacity: 1 !important; transform: none !important; }
 }
+
+/* =====================================================================
+   TITLE ON THE IMAGE
+   ===================================================================== */
+.mtl__media { position: relative; }
+.mtl__media-caption {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 1;
+    padding: 48px var(--mtl-pad) 14px;
+    color: #fff;
+    background: linear-gradient(to top, rgba(2, 6, 23, .78) 0%, rgba(2, 6, 23, .45) 50%, rgba(2, 6, 23, 0) 100%);
+    pointer-events: none;
+}
+.mtl .mtl__media-caption .mtl__title,
+.mtl .mtl-modal .mtl__media-caption .mtl__title {
+    margin: 0;
+    color: #fff;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, .35);
+}
+.mtl .mtl__media-caption .mtl__subtitle {
+    margin: .25em 0 0;
+    color: rgba(255, 255, 255, .88);
+}
+.mtl .mtl-modal .mtl__media-caption { padding: 70px 36px 22px; }
+/* the body then holds only the text preview: a little less top padding */
+.mtl__item--title-on-image .mtl__body { padding-top: calc(var(--mtl-pad) * .8); }
+
+/* =====================================================================
+   WHOLE CARD OPENS "MORE"
+   ===================================================================== */
+.mtl__card--link { cursor: pointer; }
+.mtl__card--link:focus-visible {
+    outline: 2px solid var(--mtl-accent);
+    outline-offset: 3px;
+}
+/* subtle hint that the card opens: an arrow appears in the bottom corner on hover */
+.mtl__card--link::after {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    bottom: 12px;
+    inset-inline-end: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 17L17 7M9 7h8v8' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 15px no-repeat,
+        linear-gradient(135deg, var(--mtl-accent), var(--mtl-accent-2));
+    box-shadow: 0 6px 16px -6px var(--mtl-accent);
+    opacity: 0;
+    transform: scale(.6);
+    transition: opacity .3s, transform .4s var(--mtl-ease);
+    pointer-events: none;
+}
+.mtl__card--link:hover::after,
+.mtl__card--link:focus-visible::after { opacity: 1; transform: none; }
