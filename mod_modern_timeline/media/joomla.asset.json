@@ -1,0 +1,22 @@
+{
+    "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+    "name": "mod_modern_timeline",
+    "version": "1.0.0",
+    "description": "Modern Timeline module assets",
+    "license": "GPL-2.0-or-later",
+    "assets": [
+        {
+            "name": "mod_modern_timeline",
+            "type": "style",
+            "uri": "mod_modern_timeline/timeline.css"
+        },
+        {
+            "name": "mod_modern_timeline",
+            "type": "script",
+            "uri": "mod_modern_timeline/timeline.js",
+            "attributes": {
+                "defer": true
+            }
+        }
+    ]
+}

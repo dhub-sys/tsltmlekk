@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="module" client="site" method="upgrade">
+    <name>mod_modern_timeline</name>
+    <author>Modern Timeline</author>
+    <creationDate>2026-11</creationDate>
+    <copyright>(C) 2026</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <version>1.0.0</version>
+    <description>MOD_MODERN_TIMELINE_XML_DESCRIPTION</description>
+    <namespace path="src">ModernTimeline\Module\ModernTimeline</namespace>
+
+    <files>
+        <folder module="mod_modern_timeline">services</folder>
+        <folder>src</folder>
+        <folder>tmpl</folder>
+        <folder>language</folder>
+    </files>
+
+    <media destination="mod_modern_timeline" folder="media">
+        <filename>joomla.asset.json</filename>
+        <folder>css</folder>
+        <folder>js</folder>
+    </media>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/mod_modern_timeline.ini</language>
+        <language tag="en-GB">en-GB/mod_modern_timeline.sys.ini</language>
+        <language tag="el-GR">el-GR/mod_modern_timeline.ini</language>
+        <language tag="el-GR">el-GR/mod_modern_timeline.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <!-- ============ ITEMS ============ -->
+            <fieldset name="basic">
+                <field
+                    name="items"
+                    type="subform"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_DESC"
+                    multiple="true"
+                    layout="joomla.form.field.subform.repeatable"
+                    buttons="add,remove,move"
+                    groupByFieldset="false"
+                    min="0"
+                >
+                    <form>
+                        <field
+                            name="published"
+                            type="radio"
+                            label="JPUBLISHED"
+                            layout="joomla.form.field.radio.switcher"
+                            default="1"
+                        >
+                            <option value="0">JNO</option>
+                            <option value="1">JYES</option>
+                        </field>
+                        <field
+                            name="date"
+                            type="text"
+                            label="MOD_MODERN_TIMELINE_ITEM_DATE_LABEL"
+                            description="MOD_MODERN_TIMELINE_ITEM_DATE_DESC"
+                            hint="2024"
+                            filter="string"
+                        />
+                        <field
+                            name="title"
+                            type="text"
+                            label="MOD_MODERN_TIMELINE_ITEM_TITLE_LABEL"
+                            filter="string"
+                        />
+                        <field
+                            name="subtitle"
+                            type="text"
+                            label="MOD_MODERN_TIMELINE_ITEM_SUBTITLE_LABEL"
+                            filter="string"
+                        />
+                        <field
+                            name="content"
+                            type="editor"
+                            label="MOD_MODERN_TIMELINE_ITEM_CONTENT_LABEL"
+                            buttons="false"
+                            height="180"
+                            filter="\Joomla\CMS\Component\ComponentHelper::filterText"
+                        />
+                        <field
+                            name="image"
+                            type="media"
+                            label="MOD_MODERN_TIMELINE_ITEM_IMAGE_LABEL"
+                            preview="tooltip"
+                        />
+                        <field
+                            name="image_alt"
+                            type="text"
+                            label="MOD_MODERN_TIMELINE_ITEM_IMAGE_ALT_LABEL"
+                            filter="string"
+                        />
+                        <field
+                            name="icon"
+                            type="text"
+                            label="MOD_MODERN_TIMELINE_ITEM_ICON_LABEL"
+                            description="MOD_MODERN_TIMELINE_ITEM_ICON_DESC"
+                            hint="star"
+                            filter="cmd"
+                        />
+                        <field
+                            name="color"
+                            type="color"
+                            label="MOD_MODERN_TIMELINE_ITEM_COLOR_LABEL"
+                            description="MOD_MODERN_TIMELINE_ITEM_COLOR_DESC"
+                            default=""
+                        />
+                        <field
+                            name="link"
+                            type="url"
+                            label="MOD_MODERN_TIMELINE_ITEM_LINK_LABEL"
+                            filter="url"
+                            validate="url"
+                            relative="true"
+                        />
+                        <field
+                            name="link_text"
+                            type="text"
+                            label="MOD_MODERN_TIMELINE_ITEM_LINK_TEXT_LABEL"
+                            hint="MOD_MODERN_TIMELINE_READ_MORE"
+                            filter="string"
+                        />
+                        <field
+                            name="link_blank"
+                            type="radio"
+                            label="MOD_MODERN_TIMELINE_ITEM_LINK_BLANK_LABEL"
+                            layout="joomla.form.field.radio.switcher"
+                            default="0"
+                        >
+                            <option value="0">JNO</option>
+                            <option value="1">JYES</option>
+                        </field>
+                        <field
+                            name="highlight"
+                            type="radio"
+                            label="MOD_MODERN_TIMELINE_ITEM_HIGHLIGHT_LABEL"
+                            description="MOD_MODERN_TIMELINE_ITEM_HIGHLIGHT_DESC"
+                            layout="joomla.form.field.radio.switcher"
+                            default="0"
+                        >
+                            <option value="0">JNO</option>
+                            <option value="1">JYES</option>
+                        </field>
+                    </form>
+                </field>
+                <field
+                    name="reverse"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_REVERSE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_REVERSE_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="0"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="prepare_content"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_PREPARE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_PREPARE_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="0"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+
+            <!-- ============ LAYOUT ============ -->
+            <fieldset name="mtl_layout" label="MOD_MODERN_TIMELINE_FIELDSET_LAYOUT">
+                <field
+                    name="layout_mode"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_LAYOUT_MODE_LABEL"
+                    default="horizontal"
+                >
+                    <option value="horizontal">MOD_MODERN_TIMELINE_LAYOUT_HORIZONTAL</option>
+                    <option value="vertical">MOD_MODERN_TIMELINE_LAYOUT_VERTICAL</option>
+                </field>
+                <field
+                    name="alternate"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_ALTERNATE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ALTERNATE_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="card_width"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_CARD_WIDTH_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_CARD_WIDTH_DESC"
+                    default="320"
+                    min="180"
+                    max="800"
+                    step="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal"
+                />
+                <field
+                    name="gap"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_GAP_LABEL"
+                    default="28"
+                    min="0"
+                    max="120"
+                    step="2"
+                    filter="integer"
+                />
+                <field
+                    name="initial_items"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_INITIAL_ITEMS_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_INITIAL_ITEMS_DESC"
+                    default="0"
+                    min="0"
+                    filter="integer"
+                    showon="layout_mode:vertical"
+                />
+                <field
+                    name="heading_tag"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_HEADING_TAG_LABEL"
+                    default="h3"
+                >
+                    <option value="h2">H2</option>
+                    <option value="h3">H3</option>
+                    <option value="h4">H4</option>
+                    <option value="h5">H5</option>
+                    <option value="h6">H6</option>
+                    <option value="div">DIV</option>
+                </field>
+                <field
+                    name="animate"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_ANIMATE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ANIMATE_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+
+            <!-- ============ NAVIGATION / SCROLLING ============ -->
+            <fieldset name="mtl_nav" label="MOD_MODERN_TIMELINE_FIELDSET_NAV">
+                <field
+                    name="nav_note"
+                    type="note"
+                    description="MOD_MODERN_TIMELINE_NAV_NOTE"
+                    class="alert alert-info"
+                />
+                <field
+                    name="nav_position"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_NAV_POSITION_LABEL"
+                    default="bottom"
+                >
+                    <option value="bottom">MOD_MODERN_TIMELINE_NAV_BOTTOM</option>
+                    <option value="sides">MOD_MODERN_TIMELINE_NAV_SIDES</option>
+                </field>
+                <field
+                    name="scroll_step"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_SCROLL_STEP_LABEL"
+                    default="item"
+                >
+                    <option value="item">MOD_MODERN_TIMELINE_STEP_ITEM</option>
+                    <option value="page">MOD_MODERN_TIMELINE_STEP_PAGE</option>
+                </field>
+                <field
+                    name="start_at"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_START_AT_LABEL"
+                    default="first"
+                >
+                    <option value="first">MOD_MODERN_TIMELINE_START_FIRST</option>
+                    <option value="last">MOD_MODERN_TIMELINE_START_LAST</option>
+                    <option value="highlight">MOD_MODERN_TIMELINE_START_HIGHLIGHT</option>
+                </field>
+                <field
+                    name="show_progress"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_SHOW_PROGRESS_LABEL"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="show_counter"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_SHOW_COUNTER_LABEL"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="edge_fade"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_EDGE_FADE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_EDGE_FADE_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="drag"
+                    type="radio"
+                    label="MOD_MODERN_TIMELINE_FIELD_DRAG_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_DRAG_DESC"
+                    layout="joomla.form.field.radio.switcher"
+                    default="1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="autoplay"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_AUTOPLAY_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_AUTOPLAY_DESC"
+                    default="0"
+                    min="0"
+                    max="60"
+                    filter="integer"
+                />
+            </fieldset>
+
+            <!-- ============ STYLE ============ -->
+            <fieldset name="mtl_style" label="MOD_MODERN_TIMELINE_FIELDSET_STYLE">
+                <field
+                    name="theme"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_THEME_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_THEME_DESC"
+                    default="auto"
+                >
+                    <option value="auto">MOD_MODERN_TIMELINE_THEME_AUTO</option>
+                    <option value="light">MOD_MODERN_TIMELINE_THEME_LIGHT</option>
+                    <option value="dark">MOD_MODERN_TIMELINE_THEME_DARK</option>
+                </field>
+                <field
+                    name="card_style"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_CARD_STYLE_LABEL"
+                    default="glass"
+                >
+                    <option value="glass">MOD_MODERN_TIMELINE_CARD_GLASS</option>
+                    <option value="solid">MOD_MODERN_TIMELINE_CARD_SOLID</option>
+                    <option value="outline">MOD_MODERN_TIMELINE_CARD_OUTLINE</option>
+                    <option value="minimal">MOD_MODERN_TIMELINE_CARD_MINIMAL</option>
+                </field>
+                <field
+                    name="marker_style"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_MARKER_STYLE_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_MARKER_STYLE_DESC"
+                    default="icon"
+                >
+                    <option value="icon">MOD_MODERN_TIMELINE_MARKER_ICON</option>
+                    <option value="number">MOD_MODERN_TIMELINE_MARKER_NUMBER</option>
+                    <option value="dot">MOD_MODERN_TIMELINE_MARKER_DOT</option>
+                </field>
+                <field
+                    name="date_style"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_DATE_STYLE_LABEL"
+                    default="pill"
+                >
+                    <option value="pill">MOD_MODERN_TIMELINE_DATE_PILL</option>
+                    <option value="big">MOD_MODERN_TIMELINE_DATE_BIG</option>
+                    <option value="plain">MOD_MODERN_TIMELINE_DATE_PLAIN</option>
+                </field>
+                <field
+                    name="accent_color"
+                    type="color"
+                    label="MOD_MODERN_TIMELINE_FIELD_ACCENT_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ACCENT_DESC"
+                    default="#6366f1"
+                />
+                <field
+                    name="accent_color_2"
+                    type="color"
+                    label="MOD_MODERN_TIMELINE_FIELD_ACCENT2_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_ACCENT2_DESC"
+                    default="#ec4899"
+                />
+                <field
+                    name="card_bg"
+                    type="color"
+                    label="MOD_MODERN_TIMELINE_FIELD_CARD_BG_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_EMPTY_DEFAULT_DESC"
+                    format="rgba"
+                    default=""
+                />
+                <field
+                    name="text_color"
+                    type="color"
+                    label="MOD_MODERN_TIMELINE_FIELD_TEXT_COLOR_LABEL"
+                    description="MOD_MODERN_TIMELINE_FIELD_EMPTY_DEFAULT_DESC"
+                    default=""
+                />
+                <field
+                    name="radius"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_RADIUS_LABEL"
+                    default="18"
+                    min="0"
+                    max="48"
+                    filter="integer"
+                />
+                <field
+                    name="image_ratio"
+                    type="list"
+                    label="MOD_MODERN_TIMELINE_FIELD_IMAGE_RATIO_LABEL"
+                    default="16/9"
+                >
+                    <option value="16/9">16:9</option>
+                    <option value="4/3">4:3</option>
+                    <option value="3/2">3:2</option>
+                    <option value="1/1">1:1</option>
+                    <option value="auto">MOD_MODERN_TIMELINE_RATIO_AUTO</option>
+                </field>
+            </fieldset>
+
+            <!-- ============ ADVANCED ============ -->
+            <fieldset name="advanced">
+                <field
+                    name="layout"
+                    type="modulelayout"
+                    label="JFIELD_ALT_LAYOUT_LABEL"
+                    class="form-select"
+                    validate="moduleLayout"
+                />
+                <field
+                    name="moduleclass_sfx"
+                    type="textarea"
+                    label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+                    rows="3"
+                    validate="CssIdentifier"
+                />
+                <field
+                    name="cache"
+                    type="list"
+                    label="COM_MODULES_FIELD_CACHING_LABEL"
+                    default="1"
+                    filter="integer"
+                    validate="options"
+                >
+                    <option value="1">JGLOBAL_USE_GLOBAL</option>
+                    <option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+                </field>
+                <field
+                    name="cache_time"
+                    type="number"
+                    label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+                    default="900"
+                    filter="integer"
+                />
+                <field
+                    name="cachemode"
+                    type="hidden"
+                    default="static"
+                >
+                    <option value="static"></option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+</extension>
