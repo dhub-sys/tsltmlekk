@@ -124,6 +124,8 @@ class TimelineHelper
         $vars[] = '--mtl-gap:' . max(0, min(120, (int) $params->get('gap', 28))) . 'px';
         $vars[] = '--mtl-radius:' . max(0, min(48, (int) $params->get('radius', 18))) . 'px';
 
+        $vars[] = '--mtl-modal-z:' . max(1, min(2147483000, (int) $params->get('modal_z_index', 1010)));
+
         $ratio  = (string) $params->get('image_ratio', '16/9');
         $vars[] = '--mtl-ratio:' . (preg_match('#^\d+/\d+$#', $ratio) ? $ratio : 'auto');
 

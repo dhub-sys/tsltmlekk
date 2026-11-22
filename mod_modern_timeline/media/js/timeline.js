@@ -698,10 +698,26 @@
         var self = this;
         var root = this.root;
         var d = document.createElement('dialog');
+        var wrap = document.createElement('div');
         var label = function (k) { return (root.getAttribute('data-l-' + k) || k).replace(/"/g, '&quot;'); };
+
+        // The modal is NOT opened with showModal(): that puts it in the browser "top layer",
+        // above everything on the page, including custom mouse cursors (a common YOOtheme
+        // add-on), which then disappear. Instead it lives in <body> with its own z-index,
+        // and we provide what showModal() gave us: Esc, backdrop click, focus trap, scroll lock.
+        var theme = 'mtl--theme-light';
+        if (root.classList.contains('mtl--theme-dark') ||
+            (root.classList.contains('mtl--theme-auto') && root.closest('.uk-light, .uk-section-secondary, .uk-overlay-primary'))) {
+            theme = 'mtl--theme-dark';
+        }
+        var dateStyle = (root.className.match(/mtl--date-[a-z]+/) || ['mtl--date-pill'])[0];
+        wrap.className = 'mtl mtl-modal-wrap ' + theme + ' ' + dateStyle;
+        wrap.setAttribute('style', root.getAttribute('style') || '');
+        wrap.hidden = true;
 
         d.className = 'mtl-modal';
         d.id = root.id + '-modal';
+        d.setAttribute('aria-modal', 'true');
         d.innerHTML =
             '<button type="button" class="mtl-modal__close" aria-label="' + label('close') + '">' + ICON_CLOSE + '</button>' +
             '<div class="mtl-modal__scroll"><div class="mtl-modal__content"></div></div>' +
@@ -710,9 +726,11 @@
                 '<span class="mtl__counter mtl-modal__counter"></span>' +
                 '<button type="button" class="mtl__btn" data-dir="1" aria-label="' + label('next') + '">' + ICON_NEXT + '</button>' +
             '</div>';
-        root.appendChild(d);
+        wrap.appendChild(d);
+        document.body.appendChild(wrap);
 
         this.modal = d;
+        this.modalWrap = wrap;
         this.modalContent = d.querySelector('.mtl-modal__content');
         this.modalScroll = d.querySelector('.mtl-modal__scroll');
         this.modalCounter = d.querySelector('.mtl-modal__counter');
@@ -724,20 +742,40 @@
         this.modalNext.addEventListener('click', function () { self.showInModal(self.modalIndex + 1); });
 
         // Click on the backdrop closes.
-        d.addEventListener('click', function (e) {
-            if (e.target === d) {
+        wrap.addEventListener('click', function (e) {
+            if (e.target === wrap) {
                 d.close();
             }
         });
-        d.addEventListener('keydown', function (e) {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        wrap.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                d.close();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 var dir = e.key === 'ArrowRight' ? 1 : -1;
                 if (self.rtl) { dir = -dir; }
                 e.preventDefault();
                 self.showInModal(self.modalIndex + dir);
+            } else if (e.key === 'Tab') {
+                // Keep keyboard focus inside the modal.
+                var f = Array.prototype.filter.call(
+                    d.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), iframe, video[controls]'),
+                    function (el) { return el.offsetWidth || el.offsetHeight; }
+                );
+                if (!f.length) { return; }
+                var first = f[0];
+                var last = f[f.length - 1];
+                if (e.shiftKey && (document.activeElement === first || !d.contains(document.activeElement))) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
         });
         d.addEventListener('close', function () {
+            wrap.hidden = true;
             document.documentElement.classList.remove('mtl-modal-open');
             self.revealItem(self.modalIndex);
         });
@@ -753,7 +791,10 @@
         this.stopAutoplay();
         this.showInModal(index);
         document.documentElement.classList.add('mtl-modal-open');
-        this.modal.showModal();
+        this.modalWrap.hidden = false;
+        if (!this.modal.open) {
+            this.modal.show();
+        }
         this.modal.querySelector('.mtl-modal__close').focus({ preventScroll: true });
     };
 
