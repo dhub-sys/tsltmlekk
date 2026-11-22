@@ -356,11 +356,21 @@
 /* --- card width modes --- */
 .mtl--horizontal .mtl__viewport { container-type: inline-size; }
 
+/* Items per YOOtheme / UIkit breakpoint (window width, like YOOtheme):
+   exact number in "fixed number" mode, upper limit in "automatic" mode. */
+.mtl--horizontal { --mtl-cap: var(--mtl-n-xs, 1); }
+@media (min-width: 640px)  { .mtl--horizontal { --mtl-cap: var(--mtl-n-s, 2); } }
+@media (min-width: 960px)  { .mtl--horizontal { --mtl-cap: var(--mtl-n-m, 3); } }
+@media (min-width: 1200px) { .mtl--horizontal { --mtl-cap: var(--mtl-n-l, 4); } }
+@media (min-width: 1600px) { .mtl--horizontal { --mtl-cap: var(--mtl-n-xl, 5); } }
+
 .mtl--w-perview .mtl__track,
 .mtl--w-auto .mtl__track {
-    --mtl-n: var(--mtl-n-m, 1);
+    /* never more columns than items, so few items still fill the width */
+    --mtl-n: min(var(--mtl-cap), var(--mtl-count, 99));
+    /* never narrower than 160px, e.g. when the module sits in a narrow column */
     grid-auto-columns: min(
-        calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-n) - 1) * var(--mtl-gap)) / var(--mtl-n)),
+        max(calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-n) - 1) * var(--mtl-gap)) / var(--mtl-n)), 160px),
         88cqw
     );
 }
@@ -370,14 +380,6 @@
         88cqw,
         var(--mtl-max-w, 520px)
     );
-}
-@container (min-width: 640px) {
-    .mtl--w-perview .mtl__track { --mtl-n: var(--mtl-n-t, 2); }
-    .mtl--w-auto .mtl__track { --mtl-n: 2; }
-}
-@container (min-width: 960px) {
-    .mtl--w-perview .mtl__track { --mtl-n: var(--mtl-n-d, 3); }
-    .mtl--w-auto .mtl__track { --mtl-n: 3; }
 }
 /* set by JS after measuring the content */
 .mtl--w-auto.mtl--fitted .mtl__track { --mtl-n: var(--mtl-fit-n, 3); }

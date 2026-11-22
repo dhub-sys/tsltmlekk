@@ -5,7 +5,7 @@
     <creationDate>2026-11</creationDate>
     <copyright>(C) 2026</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <description>MOD_MODERN_TIMELINE_XML_DESCRIPTION</description>
     <namespace path="src">ModernTimeline\Module\ModernTimeline</namespace>
 
@@ -243,37 +243,62 @@
                     showon="layout_mode:horizontal[AND]width_mode:auto"
                 />
                 <field
-                    name="items_desktop"
-                    type="number"
-                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_DESKTOP_LABEL"
-                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_DESKTOP_DESC"
-                    default="3"
-                    min="1"
-                    max="8"
-                    filter="integer"
-                    showon="layout_mode:horizontal[AND]width_mode:perview"
+                    name="items_bp_note"
+                    type="note"
+                    label="MOD_MODERN_TIMELINE_ITEMS_BP_NOTE_LABEL"
+                    description="MOD_MODERN_TIMELINE_ITEMS_BP_NOTE_DESC"
+                    class="alert alert-info"
+                    showon="layout_mode:horizontal[AND]width_mode!:fixed"
                 />
                 <field
-                    name="items_tablet"
+                    name="items_xs"
                     type="number"
-                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_TABLET_LABEL"
-                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_TABLET_DESC"
-                    default="2"
-                    min="1"
-                    max="6"
-                    filter="integer"
-                    showon="layout_mode:horizontal[AND]width_mode:perview"
-                />
-                <field
-                    name="items_mobile"
-                    type="number"
-                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_MOBILE_LABEL"
-                    description="MOD_MODERN_TIMELINE_FIELD_ITEMS_MOBILE_DESC"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_XS_LABEL"
                     default="1"
                     min="1"
-                    max="3"
+                    max="10"
                     filter="integer"
-                    showon="layout_mode:horizontal[AND]width_mode:perview"
+                    showon="layout_mode:horizontal[AND]width_mode!:fixed"
+                />
+                <field
+                    name="items_s"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_S_LABEL"
+                    default="2"
+                    min="1"
+                    max="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode!:fixed"
+                />
+                <field
+                    name="items_m"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_M_LABEL"
+                    default="3"
+                    min="1"
+                    max="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode!:fixed"
+                />
+                <field
+                    name="items_l"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_L_LABEL"
+                    default="4"
+                    min="1"
+                    max="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode!:fixed"
+                />
+                <field
+                    name="items_xl"
+                    type="number"
+                    label="MOD_MODERN_TIMELINE_FIELD_ITEMS_XL_LABEL"
+                    default="5"
+                    min="1"
+                    max="10"
+                    filter="integer"
+                    showon="layout_mode:horizontal[AND]width_mode!:fixed"
                 />
                 <field
                     name="card_width"

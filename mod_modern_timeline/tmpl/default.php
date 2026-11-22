@@ -102,7 +102,7 @@ $chevron = static fn (string $dir) => '<svg viewBox="0 0 24 24" width="20" heigh
     . ($dir === 'prev' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6')
     . '" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 ?>
-<div id="<?php echo $id; ?>" class="<?php echo $e(implode(' ', $classes)); ?>" style="<?php echo $e($styleVars); ?>"<?php echo $attr; ?>>
+<div id="<?php echo $id; ?>" class="<?php echo $e(implode(' ', $classes)); ?>" style="<?php echo $e($styleVars . ';--mtl-count:' . $total); ?>"<?php echo $attr; ?>>
     <div class="mtl__viewport"<?php if ($horizontal) : ?> tabindex="0" role="region" aria-label="<?php echo $e($module->title ?: Text::_('MOD_MODERN_TIMELINE_ARIA_TIMELINE')); ?>"<?php endif; ?>>
         <ol class="mtl__track">
             <?php foreach ($items as $i => $item) :

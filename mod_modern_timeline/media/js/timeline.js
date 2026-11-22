@@ -402,6 +402,11 @@
         var maxW = parseInt(root.getAttribute('data-max-w'), 10) || 520;
         var maxH = parseInt(root.getAttribute('data-max-h'), 10) || Math.max(380, window.innerHeight * 0.8);
         var count = this.items.length;
+        // Upper limit for the current YOOtheme breakpoint (set in CSS from the module settings).
+        var cap = parseInt(getComputedStyle(root).getPropertyValue('--mtl-cap'), 10);
+        if (cap > 0) {
+            count = Math.min(count, cap);
+        }
 
         // Most columns allowed by the minimum width, fewest allowed by the maximum width.
         var nMax = Math.max(1, Math.min(count, Math.floor((inner + gap) / (minW + gap))));

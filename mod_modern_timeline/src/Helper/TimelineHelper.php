@@ -100,9 +100,22 @@ class TimelineHelper
         }
 
         $vars[] = '--mtl-card-w:' . max(180, min(800, (int) $params->get('card_width', 320))) . 'px';
-        $vars[] = '--mtl-n-d:' . max(1, min(8, (int) $params->get('items_desktop', 3)));
-        $vars[] = '--mtl-n-t:' . max(1, min(6, (int) $params->get('items_tablet', 2)));
-        $vars[] = '--mtl-n-m:' . max(1, min(3, (int) $params->get('items_mobile', 1)));
+        // Max / exact items per YOOtheme (UIkit) breakpoint.
+        // Falls back to the 1.1 settings (desktop/tablet/mobile) for modules saved before 1.2.
+        $desktop = $params->get('items_desktop', null);
+        $legacy  = [
+            'xs' => $params->get('items_mobile', null),
+            's'  => $params->get('items_tablet', null),
+            'm'  => $desktop,
+            'l'  => $desktop,
+            'xl' => $desktop,
+        ];
+        $defaults = ['xs' => 1, 's' => 2, 'm' => 3, 'l' => 4, 'xl' => 5];
+
+        foreach ($defaults as $bp => $default) {
+            $value  = $params->get('items_' . $bp, $legacy[$bp] ?? $default);
+            $vars[] = '--mtl-n-' . $bp . ':' . max(1, min(10, (int) ($value ?: $default)));
+        }
         $vars[] = '--mtl-max-w:' . max(200, min(1200, (int) $params->get('auto_max_width', 520))) . 'px';
 
         if (($lines = (int) $params->get('text_lines', 0)) > 0) {
