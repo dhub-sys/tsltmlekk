@@ -29,6 +29,7 @@
 
         this.initReveal();
         this.initMore();
+        this.initActive();
 
         if (this.horizontal) {
             this.initHorizontal();
@@ -275,6 +276,8 @@
             this.current.textContent = pad(this.currentIndex() + 1);
         }
 
+        this.updateActive();
+
         // Make the viewport focusable only when there is something to scroll.
         if (overflow) {
             vp.setAttribute('tabindex', '0');
@@ -411,7 +414,8 @@
         var track = this.track;
         var cs = getComputedStyle(track);
         var gap = parseFloat(cs.columnGap) || 0;
-        var inner = this.viewport.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+        // Both sides use the same edge padding (the end may carry an extra column in compact mode).
+        var inner = this.viewport.clientWidth - 2 * (parseFloat(cs.paddingLeft) || 0);
 
         if (inner <= 0) {
             return;
@@ -426,35 +430,121 @@
         if (cap > 0) {
             count = Math.min(count, cap);
         }
-
-        // Most columns allowed by the minimum width, fewest allowed by the maximum width.
-        var nMax = Math.max(1, Math.min(count, Math.floor((inner + gap) / (minW + gap))));
-        var nMin = Math.max(1, Math.min(nMax, Math.ceil((inner + gap) / (maxW + gap))));
-        root.classList.add('mtl--fitted');
-
-        // Try from the most items per screen down: keep the first that fits the height.
-        var tryFit = function () {
-            for (var n = nMax; n >= nMin; n--) {
-                root.style.setProperty('--mtl-fit-n', n);
-                if (track.offsetHeight <= maxH) {
-                    return { n: n, fits: true };
-                }
+        // Interlocking cards (alternate + shared space, screens >= 640px): n items use n + 1
+        // columns and every card spans two of them.
+        var compact = getComputedStyle(root).getPropertyValue('--mtl-compact').trim() === '1';
+        var cardWidth = function (n) {
+            if (compact) {
+                var col = (inner - n * gap) / (n + 1);
+                return 2 * col + gap;
             }
-            root.style.setProperty('--mtl-fit-n', nMin);
-            return { n: nMin, fits: false };
+            return (inner - (n - 1) * gap) / n;
         };
 
-        root.classList.remove('mtl--alt-off');
-        var res = tryFit();
+        root.classList.add('mtl--fitted');
 
-        // Cards alternating above/below the line roughly double the height.
-        // If that does not fit the screen, put all cards in one row instead.
-        if (!res.fits && root.classList.contains('mtl--alternate')) {
-            root.classList.add('mtl--alt-off');
-            res = tryFit();
+        // From the most items per screen down: keep the first that fits the height.
+        // Stop once cards reach the maximum width (fewer items would not get any shorter).
+        var chosen = 1;
+        for (var n = Math.max(1, count); n >= 1; n--) {
+            var w = cardWidth(n);
+            if (w < minW && n > 1) {
+                continue;
+            }
+            chosen = n;
+            root.style.setProperty('--mtl-fit-n', n);
+            if (track.offsetHeight <= maxH || w >= maxW) {
+                break;
+            }
         }
 
-        root.style.setProperty('--mtl-fit-n', res.n);
+        root.style.setProperty('--mtl-fit-n', chosen);
+    };
+
+    /* ---------- "active" highlight (first / centre / hovered card) ---------- */
+    Timeline.prototype.initActive = function () {
+        var self = this;
+        var mode = this.root.getAttribute('data-active');
+
+        if (!mode || mode === 'manual') {
+            return;
+        }
+
+        this.activeMode = mode;
+        this.activeIndex = -1;
+
+        if (mode === 'hover') {
+            this.items.forEach(function (el, i) {
+                el.addEventListener('mouseenter', function () { self.setActive(i); });
+                el.addEventListener('focusin', function () { self.setActive(i); });
+            });
+            this.root.querySelector('.mtl__track').addEventListener('mouseleave', function () { self.setActive(-1); });
+            this.root.addEventListener('focusout', function (e) {
+                if (!self.root.contains(e.relatedTarget)) { self.setActive(-1); }
+            });
+            return;
+        }
+
+        if (!this.horizontal) {
+            var raf = null;
+            var onScroll = function () {
+                if (raf) { return; }
+                raf = requestAnimationFrame(function () { raf = null; self.updateActive(); });
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll);
+        }
+        requestAnimationFrame(function () { self.updateActive(); });
+    };
+
+    Timeline.prototype.updateActive = function () {
+        if (!this.activeMode || this.activeMode === 'hover') {
+            return;
+        }
+        var first = this.activeMode === 'first';
+        var box = this.horizontal ? this.viewport.getBoundingClientRect() : { left: 0, right: window.innerWidth, top: 0, bottom: window.innerHeight };
+        var best = -1;
+        var bestScore = Infinity;
+
+        this.items.forEach(function (el, i) {
+            var r = el.querySelector('.mtl__card').getBoundingClientRect();
+            if (!r.width) {
+                return; // collapsed ("show more")
+            }
+            var score;
+            if (this.horizontal) {
+                if (!(r.right > box.left + 8 && r.left < box.right - 8)) {
+                    return;
+                }
+                score = first ? (r.left >= box.left - 12 ? r.left - box.left : 1e6 + (box.left - r.left))
+                              : Math.abs((r.left + r.right) / 2 - (box.left + box.right) / 2);
+            } else {
+                if (!(r.bottom > 60 && r.top < box.bottom - 60)) {
+                    return;
+                }
+                score = first ? (r.top >= 0 ? r.top : 1e6 - r.top)
+                              : Math.abs((r.top + r.bottom) / 2 - box.bottom / 2);
+            }
+            if (score < bestScore) {
+                bestScore = score;
+                best = i;
+            }
+        }, this);
+
+        if (best === -1 && first) {
+            best = 0;
+        }
+        this.setActive(best);
+    };
+
+    Timeline.prototype.setActive = function (index) {
+        if (index === this.activeIndex) {
+            return;
+        }
+        this.activeIndex = index;
+        this.items.forEach(function (el, i) {
+            el.classList.toggle('mtl__item--highlight', i === index);
+        });
     };
 
     /* ------------------------------------------------------------------ */

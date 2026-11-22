@@ -364,19 +364,25 @@
 @media (min-width: 1200px) { .mtl--horizontal { --mtl-cap: var(--mtl-n-l, 4); } }
 @media (min-width: 1600px) { .mtl--horizontal { --mtl-cap: var(--mtl-n-xl, 5); } }
 
+/* --mtl-n = items per screen, --mtl-c = columns per screen, --mtl-col = column width */
+.mtl--horizontal .mtl__track {
+    --mtl-col: min(var(--mtl-card-w), 84vw);
+    grid-auto-columns: var(--mtl-col);
+}
 .mtl--w-perview .mtl__track,
 .mtl--w-auto .mtl__track {
     /* never more columns than items, so few items still fill the width */
     --mtl-n: min(var(--mtl-cap), var(--mtl-count, 99));
+    --mtl-c: var(--mtl-n);
     /* never narrower than 160px, e.g. when the module sits in a narrow column */
-    grid-auto-columns: min(
-        max(calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-n) - 1) * var(--mtl-gap)) / var(--mtl-n)), 160px),
+    --mtl-col: min(
+        max(calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-c) - 1) * var(--mtl-gap)) / var(--mtl-c)), 160px),
         88cqw
     );
 }
 .mtl--w-auto .mtl__track {
-    grid-auto-columns: min(
-        calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-n) - 1) * var(--mtl-gap)) / var(--mtl-n)),
+    --mtl-col: min(
+        max(calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-c) - 1) * var(--mtl-gap)) / var(--mtl-c)), 160px),
         88cqw,
         var(--mtl-max-w, 520px)
     );
@@ -391,6 +397,8 @@
     scroll-snap-align: start;
     min-width: 0;
 }
+/* date, marker and card always share the item's single column (the date may share row 2 with the marker) */
+.mtl--horizontal .mtl__item > * { grid-column: 1; }
 .mtl--horizontal .mtl__date  { grid-row: 1; padding-inline-start: 10px; padding-bottom: 2px; }
 .mtl--horizontal .mtl__marker { grid-row: 2; height: calc(var(--mtl-marker) + 28px); padding-inline-start: 10px; }
 .mtl--horizontal .mtl__card  { grid-row: 3; align-self: start; }
@@ -425,15 +433,82 @@
     opacity: .45;
 }
 
+/* all cards above the line */
+.mtl--horizontal.mtl--cards-above .mtl__card { grid-row: 1; align-self: end; }
+.mtl--horizontal.mtl--cards-above .mtl__date { grid-row: 3; align-items: flex-start; padding-top: 2px; padding-bottom: 0; }
+.mtl--horizontal.mtl--cards-above .mtl__marker::after {
+    top: 0;
+    bottom: calc(50% + var(--mtl-marker) / 2);
+    background: linear-gradient(transparent, var(--mtl-accent));
+}
+
 /* alternate: even items flip the card above the line (not on phones, where it would leave a tall gap) */
 @media (min-width: 640px) {
-    .mtl--horizontal.mtl--alternate:not(.mtl--alt-off) .mtl__item:nth-child(even) .mtl__card { grid-row: 1; align-self: end; }
-    .mtl--horizontal.mtl--alternate:not(.mtl--alt-off) .mtl__item:nth-child(even) .mtl__date { grid-row: 3; align-items: flex-start; padding-top: 2px; padding-bottom: 0; }
-    .mtl--horizontal.mtl--alternate:not(.mtl--alt-off) .mtl__item:nth-child(even) .mtl__marker::after {
+    .mtl--horizontal.mtl--alternate .mtl__item:nth-child(even) .mtl__card { grid-row: 1; align-self: end; }
+    .mtl--horizontal.mtl--alternate .mtl__item:nth-child(even) .mtl__date { grid-row: 3; align-items: flex-start; padding-top: 2px; padding-bottom: 0; }
+    .mtl--horizontal.mtl--alternate .mtl__item:nth-child(even) .mtl__marker::after {
         top: 0;
         bottom: calc(50% + var(--mtl-marker) / 2);
         background: linear-gradient(transparent, var(--mtl-accent));
     }
+
+    /* --- shared space: cards interlock above/below the line ---
+       Each card spans its own column and the neighbour's, so a card above the line
+       sits over the empty space next to a card below it. The date moves next to the
+       marker so rows 1 and 3 hold only cards. One extra column of end padding lets the
+       last card scroll fully into view. */
+    .mtl--horizontal.mtl--compact { --mtl-compact: 1; }
+    .mtl--horizontal.mtl--compact .mtl__track {
+        --mtl-c: calc(var(--mtl-n) + 1);
+        padding-inline-end: calc(var(--mtl-edge) + var(--mtl-col) + var(--mtl-gap));
+    }
+    .mtl--horizontal.mtl--compact.mtl--w-fixed .mtl__track {
+        --mtl-col: calc((min(var(--mtl-card-w), 84vw) - var(--mtl-gap)) / 2);
+    }
+    .mtl--horizontal.mtl--compact.mtl--w-perview .mtl__track {
+        --mtl-col: max(calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-c) - 1) * var(--mtl-gap)) / var(--mtl-c)), 110px);
+    }
+    .mtl--horizontal.mtl--compact.mtl--w-auto .mtl__track {
+        --mtl-col: min(
+            max(calc((100cqw - 2 * var(--mtl-edge) - (var(--mtl-c) - 1) * var(--mtl-gap)) / var(--mtl-c)), 110px),
+            calc((var(--mtl-max-w, 520px) - var(--mtl-gap)) / 2)
+        );
+    }
+    .mtl--horizontal.mtl--compact .mtl__card {
+        width: calc(200% + var(--mtl-gap));
+        z-index: 1;
+    }
+    .mtl--horizontal.mtl--compact .mtl__item .mtl__date {
+        grid-row: 2 !important;
+        align-self: center;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        padding: 0;
+        padding-inline-start: calc(10px + var(--mtl-marker) + 12px);
+        /* sit just above the line, to the right of the marker */
+        transform: translateY(calc(-50% - 4px));
+        pointer-events: none;
+    }
+    .mtl--horizontal.mtl--compact .mtl__marker { height: calc(var(--mtl-marker) + 48px); }
+
+    /* wide interlocking cards: image beside the text instead of above it (much shorter cards);
+       narrow cards wrap back to image-on-top automatically */
+    .mtl--horizontal.mtl--compact .mtl__item--has-image .mtl__card {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+    }
+    .mtl--horizontal.mtl--compact .mtl__item--has-image .mtl__media {
+        flex: 1 0 38%;
+        min-height: 150px;
+    }
+    .mtl--horizontal.mtl--compact .mtl__item--has-image .mtl__body {
+        flex: 1 1 220px;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+    .mtl--horizontal.mtl--compact.mtl--date-big .mtl__date-label { font-size: 1.5rem; }
 }
 
 /* ---------- navigation ---------- */
@@ -797,11 +872,14 @@ html.mtl-modal-open { overflow: hidden; }
 /* growth origins */
 .mtl--anim-scale .mtl__card { transform-origin: 50% 0; }
 .mtl--anim-scale .mtl__date-label { transform-origin: 0 100%; }
+.mtl--anim-scale.mtl--cards-above .mtl__card { transform-origin: 50% 100%; }
 .mtl--anim-scale.mtl--horizontal .mtl__marker::before { transform-origin: 0 50%; }
 [dir="rtl"] .mtl--anim-scale.mtl--horizontal .mtl__marker::before { transform-origin: 100% 50%; }
 .mtl--anim-scale.mtl--vertical .mtl__marker::before { transform-origin: 50% 0; }
 @media (min-width: 640px) {
-    .mtl--anim-scale.mtl--horizontal.mtl--alternate:not(.mtl--alt-off) .mtl__item:nth-child(even) .mtl__card { transform-origin: 50% 100%; }
+    .mtl--anim-scale.mtl--horizontal.mtl--alternate .mtl__item:nth-child(even) .mtl__card { transform-origin: 50% 100%; }
+    .mtl--anim-scale.mtl--horizontal.mtl--compact .mtl__card { transform-origin: 25% 0; }
+    .mtl--anim-scale.mtl--horizontal.mtl--compact .mtl__item:nth-child(even) .mtl__card { transform-origin: 25% 100%; }
 }
 
 /* revealing: staged transitions */

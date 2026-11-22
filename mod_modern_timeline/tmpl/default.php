@@ -54,9 +54,19 @@ if ($horizontal) {
 if ($clamp) {
     $classes[] = 'mtl--clamp';
 }
-if ($params->get('alternate', 1)) {
+// Card position (modules saved before 1.4 only have the yes/no "alternate" switch).
+$cardPos = $params->get('card_position', $params->get('alternate', 1) ? 'alternate' : 'below');
+if ($cardPos === 'alternate') {
     $classes[] = 'mtl--alternate';
+    if ($horizontal && $params->get('compact_alternate', 1)) {
+        $classes[] = 'mtl--compact';
+    }
+} elseif ($cardPos === 'above' && $horizontal) {
+    $classes[] = 'mtl--cards-above';
 }
+
+$activeMode = in_array($params->get('highlight_mode', 'manual'), ['manual', 'first', 'center', 'hover'], true)
+    ? $params->get('highlight_mode', 'manual') : 'manual';
 // Animation style (modules saved before 1.3 only have the yes/no "animate" switch).
 $animation = $params->get('animation', $params->get('animate', 1) ? 'scale' : 'none');
 if (in_array($animation, ['scale', 'fade'], true)) {
@@ -80,6 +90,7 @@ $dataAttrs = [
     'data-autoplay'     => max(0, (int) $params->get('autoplay', 0)),
     'data-drag'         => (int) $params->get('drag', 1),
     'data-initial'      => $horizontal ? 0 : max(0, (int) $params->get('initial_items', 0)),
+    'data-active'       => $activeMode,
 ];
 
 if ($clamp) {
@@ -109,7 +120,7 @@ $chevron = static fn (string $dir) => '<svg viewBox="0 0 24 24" width="20" heigh
     <div class="mtl__viewport"<?php if ($horizontal) : ?> tabindex="0" role="region" aria-label="<?php echo $e($module->title ?: Text::_('MOD_MODERN_TIMELINE_ARIA_TIMELINE')); ?>"<?php endif; ?>>
         <ol class="mtl__track">
             <?php foreach ($items as $i => $item) :
-                $liClass = 'mtl__item' . ($item->highlight ? ' mtl__item--highlight' : '') . ($item->image ? ' mtl__item--has-image' : '');
+                $liClass = 'mtl__item' . ($item->highlight && $activeMode === 'manual' ? ' mtl__item--highlight' : '') . ($item->image ? ' mtl__item--has-image' : '');
                 $liStyle = $item->color !== '' ? ' style="--mtl-accent:' . $e($item->color) . ';--mtl-accent-2:' . $e($item->color) . '"' : '';
                 ?>
                 <li class="<?php echo $liClass; ?>"<?php echo $liStyle; ?><?php echo $item->highlight ? ' data-mtl-highlight' : ''; ?>>
